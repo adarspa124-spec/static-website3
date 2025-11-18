@@ -2,36 +2,35 @@ pipeline {
     agent any
 
     stages {
-
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                echo "Pulling latest website code..."
-                checkout scm
+                echo 'Pulling website code...'
+                git branch: 'main', url: 'https://github.com/YOUR-USER/YOUR-REPO.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building NGINX Docker image..."
-                bat 'docker build -t static-site:1 .'
+                powershell """
+                    docker build -t static-website:latest .
+                """
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Run Container') {
             steps {
-                echo "Stopping old container if running..."
-                bat '''
-                docker stop static_container || exit 0
-                docker rm static_container || exit 0
-                '''
+                powershell """
+                    docker stop static-web -ErrorAction SilentlyContinue
+                    docker rm static-web -ErrorAction SilentlyContinue
+                    docker run -d --name static-web -p 8080:80 static-website:latest
+                """
             }
         }
+    }
 
-        stage('Run New Container') {
-            steps {
-                echo "Running new NGINX container..."
-                bat 'docker run -d -p 80:80 --name static_container static-site:1'
-            }
+    post {
+        success {
+            echo "Website running at: http://localhost:8080"
         }
     }
 }
