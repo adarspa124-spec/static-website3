@@ -18,7 +18,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo "Building Docker image on Windows..."
-                bat 'docker build -t myapp:latest .'
+                bat 'docker build -t sw-lab:11 .'
             }
         }
 
