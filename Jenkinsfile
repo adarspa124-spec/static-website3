@@ -18,14 +18,14 @@ pipeline {
         }
 
         stage('Run Container') {
-            steps {
-                powershell """
-                    docker stop static-web -ErrorAction SilentlyContinue
-                    docker rm static-web -ErrorAction SilentlyContinue
-                    docker run -d --name static-web -p 8080:80 static-website:latest
-                """
-            }
-        }
+    steps {
+        powershell """
+            docker stop static-web 2>\$null
+            docker rm static-web 2>\$null
+            docker run -d --name static-web -p 8080:80 static-website:latest
+        """
+    }
+}
     }
 
     post {
