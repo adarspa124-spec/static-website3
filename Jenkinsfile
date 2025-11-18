@@ -18,19 +18,19 @@ pipeline {
         }
 
         stage('Run Container') {
-    steps {
-        powershell """
-            docker stop static-web 2>\$null
-            docker rm static-web 2>\$null
-            docker run -d --name static-web -p 8080:80 static-website:latest
-        """
-    }
-}
+            steps {
+                powershell """
+                    docker stop static-web 2>\$null
+                    docker rm static-web 2>\$null
+                    docker run -d --name static-web -p 9090:80 static-website:latest
+                """
+            }
+        }
     }
 
     post {
         success {
-            echo "Website running at: http://localhost:8080"
+            echo "Website running at: http://localhost:9090"
         }
     }
 }
