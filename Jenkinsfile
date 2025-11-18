@@ -3,29 +3,34 @@ pipeline {
 
     stages {
 
-        stage('Test') {
+        stage('Checkout Code') {
             steps {
-                echo "Running basic tests..."
+                echo "Pulling latest website code..."
+                checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo "Building the project..."
+                echo "Building NGINX Docker image..."
+                bat 'docker build -t static-site:1 .'
             }
         }
 
-        stage('Docker Build') {
+        stage('Stop Old Container') {
             steps {
-                echo "Building Docker image on Windows..."
-                bat 'docker build -t sw-lab:11 .'
+                echo "Stopping old container if running..."
+                bat '''
+                docker stop static_container || exit 0
+                docker rm static_container || exit 0
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Run New Container') {
             steps {
-                echo "Running Docker container on Windows..."
-                bat 'docker run -d -p 8080:8080 --name myapp_container myapp:latest'
+                echo "Running new NGINX container..."
+                bat 'docker run -d -p 80:80 --name static_container static-site:1'
             }
         }
     }
