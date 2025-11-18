@@ -15,9 +15,17 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+            steps {
+                echo "Building Docker image..."
+                sh 'docker build -t myapp:latest .'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 echo "Deploying the project..."
+                sh 'docker run -d -p 8080:8080 myapp:latest'
             }
         }
     }
