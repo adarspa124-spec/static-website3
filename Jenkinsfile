@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = 'dockerhub'     // Jenkins me create kiya hua secret ID
         DOCKER_IMAGE = "root465/static-website:latest"
+        KUBECONFIG_PATH = "/var/lib/jenkins/.kube/config"
     }
 
     stages {
@@ -39,7 +40,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh """
-                    kubectl apply -f k8deployment.yaml
+                    export KUBECONFIG=$KUBECONFIG_PATH
+                    echo "Using KUBECONFIG at: $KUBECONFIG_PATH"
+                    kubectl get nodes
+                    kubectl apply -f k8deployment.yaml --validate=false
                 """
             }
         }
