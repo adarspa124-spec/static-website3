@@ -1,28 +1,45 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = 'dockerhub'     // Jenkins me create kiya hua secret ID
+        DOCKER_IMAGE = "root465/static-website:latest"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
-                echo 'Pulling website code...'
-                git branch: 'main', url: 'https://github.com/adarspa124-spec/static-website3.git'
+                git branch: 'main',
+                    url: 'https://github.com/adarspa124-spec/static-website3.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                    docker build -t static-website:latest .
-                """
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
-        stage('Run Container') {
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKERHUB_CREDENTIALS,
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh """
+                        echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
+                        docker push $DOCKER_IMAGE
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
             steps {
                 sh """
-                    docker stop static-web || true
-                    docker rm static-web || true
-                    docker run -d --name static-web -p 9090:80 static-website:latest
+                    kubectl apply -f k8s/deployment.yaml
                 """
             }
         }
@@ -30,7 +47,7 @@ pipeline {
 
     post {
         success {
-            echo "Website running at: http://<your-server-ip>:9090"
+            echo "Deployment complete! Visit: http://<server-ip>:30090"
         }
     }
 }
