@@ -40,8 +40,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh """
-                    export KUBECONFIG=$KUBECONFIG_PATH
-                    echo "Using KUBECONFIG at: $KUBECONFIG_PATH"
+                    export KUBECONFIG=/var/lib/jenkins/.kube/config
                     kubectl get nodes
                     kubectl apply -f k8deployment.yaml --validate=false
                 """
